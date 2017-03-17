@@ -1,4 +1,21 @@
-## AWS Lambda function to export Amazon RDS MySQL Query Logs to S3
+# AWS Lambda function to export Amazon RDS MySQL Query Logs to S3
+
+Forked from: https://github.com/ryanholland/rdslogs_to_s3
+
+### Forked Writings
+
+#### Limitations & Scalability
+As of this writing, Lambda functions are limited to 5 minutes of run time, ~1.5GB of memory, and ~500MB of disk space. Obviously, these are intended to be for quick execution of small programs. If you have a low-volume database, this solution will probably work.
+
+However, for large databases, you will quickly hit either the memory or run time limits of Lambda--the log files become too large. If the function fails without a clear error, this may be the case. Check your CloudWatch logs for the function (there's a link in the Lambda, on the Monitoring tab, "View logs in CloudWatch"), and you'll see on the final "REPORT" line that indicates either the memory or run time maxed out.
+
+I experimented with the possibility of creating 25 lambda functions--one each of `general/mysql-general.log.{0-23}`, plus `general/mysql-general.log`--but even the `general/mysql-general.log` alone hit Lambda's memory limit in my use case--the volume was simply too high at peak.
+
+Since the disk space is less than max memory possible in Lambda, writing to a file and streaming the file into S3, isn't an option either. Also, since files cannot be appended to in S3, the entirety of the log file must be built first and held in Lambda's memory before being sent to S3, thus eliminating the possibility of streaming a given log file's chunks onto a single file in S3. You could potentially just write the individual chunks into S3 (instead of trying to construct a file from them), but this isn't an option I explored, and doesn't seem scalable; if one chunk again becomes so large that it exceed's Lambda's limits, you will now need to re-visit the solution. The smallest unit I attempted was a single log file.
+
+So, if you have low volume, this solution might work for you. If you have medium volume, it might still work for you if you modify the script to only operate on one file, and create 25 Lambda's; I've left some comments in the code for a suggestion on how to modify the script for this. Otherwise, a more scalable ETL-style solution will be the right choice for you.
+
+---
 
 ### Requirments
 In order to enable query logging in RDS you must enable the general_log in the RDS Parameter Group with the output format to FILE
