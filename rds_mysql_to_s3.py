@@ -20,7 +20,7 @@ import boto3, botocore, pprint
 ## Set the values below if using Lambda Scheduled Event as an Event Source, otherwise leave empty and send data through the Lambda event payload.
 #S3BUCKET='aws-logs-omg'
 #S3PREFIX='onelife-staging-db/'
-#RDSINSANCE='onemedical-staging-encrypted-1481384393'
+#RDSINSTANCE='onemedical-staging-encrypted-1481384393'
 #LOGNAME='general/mysql-general'
 #LASTRECIEVED='lastWrittenMarker'
 #REGION='us-east-1'
@@ -43,7 +43,7 @@ def lambda_handler(event, context):
 	else:
 		S3BucketName = S3BUCKET
 		S3BucketPrefix = S3PREFIX
-		RDSInstanceName = RDSINSANCE
+		RDSInstanceName = RDSINSTANCE
 		logNamePrefix = LOGNAME
 		lastRecievedFile = S3BucketPrefix + LASTRECIEVED
 		region = REGION
